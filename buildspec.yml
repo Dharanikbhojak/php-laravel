@@ -29,6 +29,6 @@ phases:
     commands:
       - yarn run prod
 
-  artifacts:
+artifacts:
   files:
     - '**/*'   
