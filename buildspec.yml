@@ -20,13 +20,13 @@ phases:
      
   
   build:
-    commands:
+   commands:
       - php artisan config:clear
       - php artisan cache:clear
       - php artisan view:clear
       - php artisan route:clear
   post_build:
-    commands:
+   commands:
       - yarn build:production 
       - yarn run prod
 
