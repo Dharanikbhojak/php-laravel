@@ -27,6 +27,7 @@ phases:
       - php artisan route:clear
   post_build:
     commands:
+      - yarn build:production 
       - yarn run prod
 
 artifacts:
