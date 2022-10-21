@@ -22,12 +22,12 @@ phases:
   build:
     commands:
       #- php artisan config:clear
-      - php artisan cache:clear
-      - php artisan view:clear
-      - php artisan route:clear
+      #- php artisan cache:clear
+      #- php artisan view:clear
+      #- php artisan route:clear
   post_build:
     commands:
-      - yarn run prod
+      #- yarn run prod
 
 artifacts:
   files:
