@@ -17,7 +17,7 @@ phases:
      - composer update
       - composer install
       - yarn install
-      - echo export AWS_DEFAULT_REGION=$CSC_AWS_DEFAULT_REGION >> environment.txt
+     
   
   build:
     commands:
