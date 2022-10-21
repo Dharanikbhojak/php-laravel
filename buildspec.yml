@@ -14,6 +14,7 @@ phases:
       - yum install -y jq
   pre_build:
     commands:
+     - composer update
      - composer install
      - yarn install
      
