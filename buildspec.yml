@@ -4,7 +4,7 @@ phases:
   install:
     runtime-versions:
       php: 8.1
-      nodejs: 14.x
+      nodejs: 12.x
 
     commands:
       - curl -s https://getcomposer.org/installer | php
