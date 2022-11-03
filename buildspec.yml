@@ -6,18 +6,18 @@ phases:
       php: 7.4
       nodejs: 12.x
 
-    commands:
-      - curl -s https://getcomposer.org/installer | php
-      - mv composer.phar /usr/bin/composer
-      - npm install -g yarn
-      - npm i aws-sdk
-      - yum install -y jq
+#     commands:
+#       - curl -s https://getcomposer.org/installer | php
+#       - mv composer.phar /usr/bin/composer
+#       - npm install -g yarn
+#       - npm i aws-sdk
+#       - yum install -y jq
       
     pre_build:
-    commands:
+      commands:
      #- composer update
      #- composer install
-     - yarn install
+#      - yarn install
       
   build:
     commands:
