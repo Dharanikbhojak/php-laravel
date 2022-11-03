@@ -24,7 +24,7 @@ Parameters:
   OAuthToken:
     Description: "oauth token"
     Type: String
-    Default: "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"
+    Default: "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"
   TestStackName:
     Description: "stack name"
     Type: String
