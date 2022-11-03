@@ -8,7 +8,7 @@ Parameters:
   ApplicationName:
     Description: "Used to name resources provisioned by this template"
     Type: String
-    Default: pipeline-cf-pharma-solutions
+    Default: pipeline-cf
   GitHubUser:
     Description: "The GitHub username which owns the repository to be deployed"
     Type: String
@@ -24,11 +24,11 @@ Parameters:
   OAuthToken:
     Description: "oauth token"
     Type: String
-    Default: "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"
+    Default: "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"
   TestStackName:
     Description: "stack name"
     Type: String
-    Default: "php-ph"
+    Default: "php-ph-test"
   TemplateFileName:
     Description: "yaml file name"
     Type: String
@@ -94,49 +94,48 @@ Resources:
                 Repo: !Ref GitHubRepository
                 Branch: main
                 OAuthToken: !Ref OAuthToken
-                OAuthToken: !Ref OAuthToken             
         - Name: Build
-              Actions:
-                - Name: TestBuild
-                  InputArtifacts:
-                    - Name: testArtifact
-                  ActionTypeId:
-                    Category: Build
-                    Owner: AWS
-                    Version: 1
-                    Provider: CodeBuild
-                  OutputArtifacts:
-                    - Name: TestBuildArtifact
-                  Namespace: BuildVariables
-                  Configuration:
-                    ProjectName: !Ref CodeBuild
-                - Name: DevBuild
-                  InputArtifacts:
-                    - Name: devArtifact
-                  ActionTypeId:
-                    Category: Build
-                    Owner: AWS
-                    Version: 1
-                    Provider: CodeBuild
-                  OutputArtifacts:
-                    - Name: DevBuildArtifact
-                  Namespace: BuildVariables
-                  Configuration:
-                    ProjectName: !Ref CodeBuild    
-                - Name: ProdBuild
-                  InputArtifacts:
-                  - Name: prodArtifact
-                ActionTypeId:
-                  Category: Build
-                  Owner: AWS
-                  Version: 1
-                  Provider: CodeBuild
-                OutputArtifacts:
-                  - Name: ProdBuildArtifact
-                Namespace: BuildVariables
-                Configuration:
-                  ProjectName: !Ref CodeBuild
-
+          Actions:
+            - Name: TestBuild
+              InputArtifacts:
+                - Name: testArtifact
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Version: 1
+                Provider: CodeBuild
+              OutputArtifacts:
+                - Name: TestBuildArtifact
+              Namespace: TestBuildVariables
+              Configuration:
+                ProjectName: !Ref CodeBuild
+            - Name: DevBuild
+              InputArtifacts:
+                - Name: devArtifact
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Version: 1
+                Provider: CodeBuild
+              OutputArtifacts:
+                - Name: DevBuildArtifact
+              Namespace: DevBuildVariables
+              Configuration:
+                ProjectName: !Ref CodeBuild    
+            - Name: ProdBuild
+              InputArtifacts:
+                - Name: prodArtifact
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Version: 1
+                Provider: CodeBuild
+              OutputArtifacts:
+                - Name: ProdBuildArtifact
+              Namespace: ProdBuildVariables
+              Configuration:
+                ProjectName: !Ref CodeBuild
+​
               
         - Name: Deploy
           Actions:
@@ -148,7 +147,7 @@ Resources:
                 Category: Deploy
                 Owner: AWS
                 Version: 1
-                Provider: Cloudformation
+                Provider: CloudFormation
               Configuration:
                 ActionMode: CREATE_UPDATE
                 RoleArn: !GetAtt CodePipelineCloudFormationRole.Arn
@@ -184,18 +183,18 @@ Resources:
             - - "cp-cb"
               - !Ref ClientShortName
         Type: CODEPIPELINE
-  CodeDeployApplication:
-    Type: AWS::CodeDeploy::Application
-    Properties:
-      ApplicationName:
-        Fn::Join:
-          - "-"
-          - - "cp-cd"
-            - !Ref ClientShortName
-      ComputePlatform: Lambda
-      Tags:
-        - Key: client
-          Value: !Ref ClientShortName
+  # CodeDeployApplication:
+  #   Type: AWS::CodeDeploy::Application
+  #   Properties:
+  #     ApplicationName:
+  #       Fn::Join:
+  #         - "-"
+  #         - - "cp-cd"
+  #           - !Ref ClientShortName
+  #     ComputePlatform: Lambda
+  #     Tags:
+  #       - Key: client
+  #         Value: !Ref ClientShortName
   # DeploymentGroup:
   #   Type: AWS::CodeDeploy::DeploymentGroup
   #   Properties:
@@ -309,23 +308,23 @@ Resources:
                 Resource: "*"
                 Action:
                   - "*"
-  CodeDeployServiceRole:
-    Type: AWS::IAM::Role
-    Properties:
-      Path: /
-      RoleName: !Sub "role-${ApplicationName}-${ClientShortName}-codedeploy-${AWS::Region}"
-      Tags:
-        - Key: client
-          Value: !Ref ClientShortName
-      AssumeRolePolicyDocument:
-        Statement:
-          - Effect: "Allow"
-            Principal:
-              Service: "codedeploy.amazonaws.com"
-            Action:
-              - "sts:AssumeRole"
-      ManagedPolicyArns:
-        - "arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole"
+  # CodeDeployServiceRole:
+  #   Type: AWS::IAM::Role
+  #   Properties:
+  #     Path: /
+  #     RoleName: !Sub "role-${ApplicationName}-${ClientShortName}-codedeploy-${AWS::Region}"
+  #     Tags:
+  #       - Key: client
+  #         Value: !Ref ClientShortName
+  #     AssumeRolePolicyDocument:
+  #       Statement:
+  #         - Effect: "Allow"
+  #           Principal:
+  #             Service: "codedeploy.amazonaws.com"
+  #           Action:
+  #             - "sts:AssumeRole"
+  #     ManagedPolicyArns:
+  #       - "arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole"
   CodeBuildRole:
     Type: AWS::IAM::Role
     Properties:
@@ -365,47 +364,40 @@ Resources:
                   - "s3:GetObject"
                   - "s3:GetObjectVersion"
                   - "s3:PutObject"
-  LambdaEventRoles:
-    Type: AWS::IAM::Role
-    Properties:
-      Path: /
-      RoleName: !Sub "role-${ApplicationName}-${ClientShortName}-lambda-${AWS::Region}"
-      Tags:
-        - Key: client
-          Value: !Ref ClientShortName
-      AssumeRolePolicyDocument:
-        Statement:
-          - Effect: "Allow"
-            Principal:
-              Service: "lambda.amazonaws.com"
-            Action:
-              - "sts:AssumeRole"
-      Policies:
-        - PolicyName: !Sub "policy-${ApplicationName}-${ClientShortName}-codepipeline-${AWS::Region}"
-          PolicyDocument:
-            Statement:
-              - Effect: "Allow"
-                Resource: "*"
-                Action:
-                  - "ssm:*"
-              - Effect: "Allow"
-                Resource: "*"
-                Action:
-                  - "logs:CreateLogGroup"
-                  - "logs:CreateLogStream"
-                  - "logs:PutLogEvents"
-              - Effect: "Allow"
-                Resource: "*"
-                Action:
-                  - "autoscaling:*"
-              - Effect: "Allow"
-                Resource: "*"
-                Action:
-                  - "codedeploy:*"
-
-
-
-
-
-
-
+  # LambdaEventRoles:
+  #   Type: AWS::IAM::Role
+  #   Properties:
+  #     Path: /
+  #     RoleName: !Sub "role-${ApplicationName}-${ClientShortName}-lambda-${AWS::Region}"
+  #     Tags:
+  #       - Key: client
+  #         Value: !Ref ClientShortName
+  #     AssumeRolePolicyDocument:
+  #       Statement:
+  #         - Effect: "Allow"
+  #           Principal:
+  #             Service: "lambda.amazonaws.com"
+  #           Action:
+  #             - "sts:AssumeRole"
+  #     Policies:
+  #       - PolicyName: !Sub "policy-${ApplicationName}-${ClientShortName}-codepipeline-${AWS::Region}"
+  #         PolicyDocument:
+  #           Statement:
+  #             - Effect: "Allow"
+  #               Resource: "*"
+  #               Action:
+  #                 - "ssm:*"
+  #             - Effect: "Allow"
+  #               Resource: "*"
+  #               Action:
+  #                 - "logs:CreateLogGroup"
+  #                 - "logs:CreateLogStream"
+  #                 - "logs:PutLogEvents"
+  #             - Effect: "Allow"
+  #               Resource: "*"
+  #               Action:
+  #                 - "autoscaling:*"
+  #             - Effect: "Allow"
+  #               Resource: "*"
+  #               Action:
+  #                 - "codedeploy:*"
